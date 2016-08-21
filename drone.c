@@ -35,8 +35,9 @@ short __MODE1              = 0x00,
 
 void softReset(){
 }
-void initPWM(int file){
-   ioctl(file, I2C_SLAVE, 0x40);
+
+void initPWM(int file, short address){
+   ioctl(file, I2C_SLAVE, address);
 
   char config[2] = {0};
   config[0] = __MODE2;
@@ -48,14 +49,27 @@ void initPWM(int file){
   write(file, config, 2);
   sleep(1);
 
-  char reg[1] = {__MODE1};
-  write(file, reg, 1);
+ 
+  short mode1;
+  
+  mode1 = read(file, __MODE1, 1);
+
+  printf("Mode1: %d\n",mode1);
+  
+  mode1 = mode1 & ~__SLEEP;
+  printf("Mode1: %d\n",mode1);
+  char reg[1] = {(char)mode1};
+  
+  config[0] = __MODE1;
+  config[1] = mode1;
+  write(file, config, 2);
+  sleep(1);
   
   char data[1] = {0};
   if(read(file, data, 1) != 1)
     {
       printf("Error : Input/output Error \n");
-      exit(1);
+      //exit(1);
     }
 }
 
@@ -160,35 +174,33 @@ void readGyro(int file, int *acclArray){
   printf("Acceleration in Z-Axis : %d \n", zAccl);
     
 }
-
-void main() 
-{
-  // Create I2C bus
-  int file;
-  char *bus = "/dev/i2c-1";
-  if((file = open(bus, O_RDWR)) < 0) 
-    {
-      printf("Failed to open the bus. \n");
-      exit(1);
-    }
-	
+void readMag(int file, int *magArray){
+ 
   
-
-  // Get I2C device PWM
-  ioctl(file, I2C_SLAVE, 0x40);
-
-  int *acclArray;
-  acclArray = malloc(3*sizeof(int));
-
-  // Loop
-  while(1){
-    readGyro(file, acclArray);
-
-	
-    /*
-    // Get I2C device, LSM303DLHC MAGNETO I2C address is 0x1E(30)
+     // Get I2C device, LSM303DLHC MAGNETO I2C address is 0x1E(30)
     ioctl(file, I2C_SLAVE, 0x1E);
 
+      
+  // Select control register1(0x20)
+  // X, Y and Z-axis enable, power on mode, o/p data rate 10 Hz(0x27)
+  char config[2] = {0};
+  config[0] = 0x20;
+  config[1] = 0x27;
+  write(file, config, 2);
+	
+  // Select control register4(0x23)
+  // Full scale +/- 2g, continuous update(0x00)
+  config[0] = 0x23;
+  config[1] = 0x00;
+  write(file, config, 2);
+  sleep(1);
+
+  // Read 6 bytes of data
+  // lsb first
+  // Read xAccl lsb data from register(0x28)
+  char reg[1] = {0x28};
+  write(file, reg, 1);
+  char data[1] = {0};
     // Select MR register(0x02)
     // Continuous conversion(0x00)
     config[0] = 0x02;
@@ -262,11 +274,41 @@ void main()
     {
     zMag -= 65536;
     }
-
+    magArray[0] = xMag;
+    magArray[1] = yMag;
+    magArray[2] = zMag;
+    
     // Output data to screen
     printf("Magnetic field in X-Axis : %d \n", xMag);
     printf("Magnetic field in Y-Axis : %d \n", yMag);
     printf("Magnetic field in Z-Axis : %d \n", zMag);
-    */	
+}
+void main() 
+{
+  // Create I2C bus
+  int file;
+  char *bus = "/dev/i2c-1";
+  if((file = open(bus, O_RDWR)) < 0) 
+    {
+      printf("Failed to open the bus. \n");
+      exit(1);
+    }
+	
+  //int pwm;
+  //initPWM(pwm, 0x40);
+
+  // Get I2C device PWM
+  //ioctl(file, I2C_SLAVE, 0x40);
+
+  int *acclArray,
+    *magArray;
+  acclArray = malloc(3*sizeof(int));
+  magArray = malloc(3*sizeof(int));
+  // Loop
+  while(1){
+    readGyro(file, acclArray);
+    readMag(file, magArray);
+
+   
   }
 }
