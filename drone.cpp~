@@ -9,7 +9,7 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-
+/*
 // Registers/etc.
 short __MODE1              = 0x00,
   __MODE2              = 0x01,
@@ -283,10 +283,11 @@ void readMag(int file, int *magArray){
     printf("Magnetic field in Y-Axis : %d \n", yMag);
     printf("Magnetic field in Z-Axis : %d \n", zMag);
 }
+*/
 void main() 
 {
   // Create I2C bus
-  int file;
+  /* int file;
   char *bus = "/dev/i2c-1";
   if((file = open(bus, O_RDWR)) < 0) 
     {
@@ -310,5 +311,6 @@ void main()
     readMag(file, magArray);
 
    
-  }
+  }*/\
+  printf("Hi\n");
 }
