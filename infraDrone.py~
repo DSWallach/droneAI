@@ -1,0 +1,15 @@
+import RPi.GPIO as GPIO
+import time
+pinb = 21
+#GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+#GPIO.setup(3, GPIO.IN)                            #Right sensor connection
+GPIO.setup(pinb,GPIO.OUT)
+GPIO.output(pinb,0)
+time.sleep(0.1) 
+
+GPIO.setup(pinb, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Left sensor connection
+while True:                       #Reading output of right IR sensor
+    j=GPIO.input(pinb)                                #Right IR sensor detects an object
+    print "Obstacle detected",j
+    time.sleep(0.1)

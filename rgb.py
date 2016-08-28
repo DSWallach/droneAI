@@ -66,17 +66,11 @@ x = y = z = w = 1
 # Main loop
 try:
     while RUNNING:
-        for w in range(0,2):
-            for x in range(0,2):
-                for y in range(0,2):
-                    for z in range(0,2):
-                        print (w,x,y,z)
-                        # Slowly ramp up power percentage of each active color
-                        for i in range(20):
-                            #startMotor((w*(5+i)),(x*(0+i)),(y*(5+i)),(z*(5+i)), .1)
-                            startMotor((1*(5+i)),(1*(0+i)),(1*(5+i)),(1*(5+i)), .1)
-                        time.sleep(1)
-        stopMotor()
+        # Slowly ramp up power percentage of each active color
+        for i in range(20):
+            #startMotor((w*(5+i)),(x*(0+i)),(y*(5+i)),(z*(5+i)), .1)
+            startMotor((1*(5+i)),(1*(0+i)),(1*(5+i)),(1*(5+i)), .05)
+        time.sleep(1)
 
                         
 # If CTRL+C is pressed the main loop is broken
@@ -89,4 +83,5 @@ except KeyboardInterrupt:
 finally:
     # Stop and cleanup so the pins
     # are available to be used again
+    stopMotor()
     GPIO.cleanup()
